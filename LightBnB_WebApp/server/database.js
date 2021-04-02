@@ -81,8 +81,8 @@ const getAllReservations = function(guest_id, limit = 10) {
     JOIN properties ON property_id = properties.id
     WHERE guest_id = $1  
     LIMIT $2;  
-    `, [guest_id, limit])
-    .then(res => res.rows)
+    `,[guest_id, limit]) 
+     .then(res => res.rows)
     .catch(err => console.log(err))
   ;
 }
@@ -125,8 +125,6 @@ const getAllProperties = function(options, limit = 10) {
     hasWhereClause = true;
   }
 
-
-  //// not sure of this
   if (options.owner_id) {
       queryParams.push(options.owner_id);
     if(hasWhereClause) {
@@ -169,8 +167,6 @@ const getAllProperties = function(options, limit = 10) {
   LIMIT $${queryParams.length};
   `;
 
-  // 5
-  console.log('query strin',queryString, 'query params', queryParams);
 
   // 6
   return pool.query(queryString, queryParams)
@@ -184,10 +180,39 @@ exports.getAllProperties = getAllProperties;
  * @param {{}} property An object containing all of the property details.
  * @return {Promise<{}>} A promise to the property.
  */
+// const addProperty = function(property) {
+//   const propertyId = Object.keys(properties).length + 1;
+//   property.id = propertyId;
+//   properties[propertyId] = property;
+//   return Promise.resolve(property);
+// }
+
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
-}
+  const queryString = `INSERT INTO properties (
+    title, description, owner_id, thumbnail_photo_url,cover_photo_url,cost_per_night,street, city, province, post_code, country, parking_spaces, number_of_bathrooms,   number_of_bedrooms)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    RETURNING*;`;
+    
+    let queryParams = [
+      property.title,
+      property.description,
+      property.owner_id,
+      property.thumbnail_photo_url,
+      property.cover_photo_url,
+      property.cost_per_night,
+      property.street,
+      property.city,
+      property.province,
+      property.post_code,
+      property.country,
+      property.parking_spaces,
+      property.number_of_bathrooms,
+      property.number_of_bedrooms
+    ];
+ 
+    console.log('query params-->', queryParams)
+    return pool.query(queryString, queryParams)
+    .then(res => res.rows[0])
+    .catch(err => console.log(err.message))
+};
 exports.addProperty = addProperty;
